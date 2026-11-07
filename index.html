@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ландайский переводчик</title>
+<style>
+:root{--bg:#faf8f4;--card:#fff;--tx:#1d1b18;--mu:#7a746b;--ac:#0e7c86;--ac2:#d9f0f2;--bd:#e4dfd6;--wn:#b4541c;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181a;--card:#1e2326;--tx:#ece8e1;--mu:#99938a;--ac:#4cc3cf;--ac2:#18383c;--bd:#2f3639;--wn:#e8915a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15181a;--card:#1e2326;--tx:#ece8e1;--mu:#99938a;--ac:#4cc3cf;--ac2:#18383c;--bd:#2f3639;--wn:#e8915a;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0 14px}
+.seg{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.seg button{flex:1;padding:10px 8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;font:inherit;font-size:14px}
+.seg button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+textarea{width:100%;min-height:96px;padding:12px;border:1px solid var(--bd);border-radius:12px;background:var(--card);color:var(--tx);font:inherit;resize:vertical}
+.out{margin-top:12px;padding:14px;border-radius:12px;background:var(--ac2);font-size:18px;min-height:52px;word-wrap:break-word}
+.out small{display:block;margin-top:6px;color:var(--mu);font-size:13px}
+.cards{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px 12px}
+.c.u{border-style:dashed;border-color:var(--wn)}
+.c .s{font-weight:600}.c .t{color:var(--mu);font-size:13px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{padding:4px 10px;border-radius:999px;border:1px solid var(--bd);background:none;color:var(--tx);font:inherit;font-size:14px}
+.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.note{margin-top:16px;color:var(--mu);font-size:13px}
+</style>
+</head>
+<body>
+<main>
+<h1>Ландайский переводчик</h1>
+<div class="seg">
+<button id="b1" class="on">Ландайский → Русский</button>
+<button id="b2">Русский → Ландайский</button>
+</div>
+<textarea id="in" placeholder="Например: Etgái liitèn‘hưen xalan clánton" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
+<div class="out" id="out"><small>Перевод появится здесь</small></div>
+<div class="cards" id="cards"></div>
+<p class="note">Перевод по словам и правилам: времена, мн. число, повелительное, возвратность, «ả». Слова в рамке пунктиром не найдены или угаданы приблизительно. Нажми на вариант, чтобы выбрать другое значение.</p>
+</main>
+<script>
+const D=[["Vŭèn","Я"],["Etgái","Ты"],["Đạzoi","Он"],["Co tai","Она"],["Mlãi","Мы"],["Vịtlhèt","Вы"],["Zạ lóu̇","Они"],["Xá xoi","Да"],["Ԏt","Нет"],["Coƀáđai","Спасибо"],["Lyen","Быть"],["Tatýthěan","Иметь"],["Latén","Делать"],["Tadũĕn","Идти"],["Axtepdũĕn","Приходить"],["Catr","Есть"],["Cadũec","Пить"],["Hváidam","Хотеть"],["Cláithĩet","Знать"],["Liitèn","Видеть"],["Cóhlan","Уважаемый"],["Lanxão","Пассажиры"],["Conxámụt","Добро пожаловать"],["Xạ́","На (Союз)"],["Ngu","борт"],["Ngohaianh","радоваться"],["Mlãitynh","наш/ем"],["Xoƀái","пожалуйста"],["Trũong","занять"],["Ƀạéi","свой"],["Xȧitãoxão","места"],["Đuxón'anh","убедиться"],["Cái","что (Союз)"],["Dũong","ваш/а"],["Ḩitȧxat","ручная кладь"],["Lhuõi","надежно"],["Xatáthinh","размещено"],["Ŏlàn","желать"],["Tucrán","приятный"],["Hày","или (Союз)"],["Zạ́i","а (Союз)"],["Lan","Человек"],["Co’pán","Семья"],["Đom","Дом"],["Đonlác","Город"],["Đai","Страна"],["Dil","Школа"],["Cat","Работа"],["Nigtỹa","Область / Регион"],["Crung","Предмет"],["Lão","Локация / Геопозиция / Место"],["Lãocrung","Компас"],["Halâi","Выход"],["Falâi","Вход"],["Clhucsãong","Отделение"],["Ȧitão","Сиденье"],["Đụ̉","Святой"],["Xalan","Полёт"],["Xalan’ánh","Лететь"],["Xalan clánton","Самолёт"],["Xalanđóiham","Авиакомпания"],["Nguḩrán","Красиво"],["V‘ĕtnạ̃m","Вьетнам"],["Tatlai","1"],["Dõan","2"],["Ԏ","3"],["Đụ̉on","4"],["T‘ălqan","5"],["Ạ̃u","6"],["Dái","7"],["Ƀaicáo","8"],["Hâi","9"],["Voi","10"],["Xịp","0"],["Đan","День"],["Cạn","Когда"],["Zàinom","Кто"],["Zҽn inh","Море"],["Ngà tԏn","Аэропорт"],["Vԏn","Который"],["Ğão","Это (кроме местоимений)"],["Qạ́i","Пляж"],["Ƹài","Это (для местоимений)"],["Coi Hatàn","Ждать"],["Cọn fái ƀǎi","Ущелье"],["Đũoi cǎo","Светить"],["Đoi sam","Цена"],["Dẽan","Цвет"],["Toi dẽan","Красный"],["Hoi dẽan","Оранжевый"],["Rái dẽan","Желтый"],["Nhỏ dẽan","Зеленый"],["Forão dẽan","Голубой"],["Xoi dẽan","Синий"],["Clai dẽan","Фиолетовый"],["Rtão dẽan","Розовый"],["Hoch dẽan","Коричневый"],["Nhao dẽan","Черный"],["Nhủc dẽan","Белый"],["Nhủc nhao dẽan","Серый"],["Ngym","Вода"],["Hoi","Огонь"],["Xtai","Небо"],["Kỏnh","Земля"],["Rõa","Солнце"],["Zԏm","Луна"],["Xang","Звезда"],["Túng","Дерево"],["Hoxán","Река"],["Floi","Гора"],["Tǒi","Сильно"],["Qoi","Холод"],["Rũoi","Плавать"],["Hạn","Воздух"],["Tǒi ọt hạn","Ветер"],["Koilõa","Дождь"],["Qoi ọt koilõa","Снег"],["Kái","Певец"],["Tylh","Камень"],["Poi","Цветок"],["Ƀei","Животное"],["Xalan’ánh ọt ƀei","Птица"],["Rũoi ƀei","Рыба"],["Đan tách","Сегодня"],["Đan lyen","Вчера"],["Đan soi","Завтра"],["Ƀa đan soi","Послезавтра"],["Ƀa đan lyen","Позавчера"],["Hon","Неделя"],["Tách","Настоящее"],["Lyen","Прошлое"],["Soi","Будущее"],["Tatlaiđan","Понедельник"],["Dõanđan","Вторник"],["Ԏđan","Среда"],["Đụ̉onđan","Четверг"],["T‘ălqanđan","Пятница"],["Ạ̃uđan","Суббота"],["Dáiđan","Воскресенье"],["Tre","Чай"],["Qựu̇","Кофе"],["Nụ̂","Алфавит"],["Sai","Новый"],["Xĩen","Год"],["Ƀái","Можно"],["Toisén","Учиться"],["Tois","Школа"],["Ҽnđai","Декабрь"],["Ưng","Январь"],["Ėm’angh","Февраль"],["Đụdoi","Зима"],["Ƀa ángh ton","Март"],["Đԏi ángh","Апрель"],["Xẹp ángh","Май"],["Xang ton","Весна"],["Đong zão","Июнь"],["Đóng hạp","Июль"],["Quoi","Август"],["Zão hạp","Лето"],["Goi tẽan","Сентябрь"],["Hạ́n dҽm","Октябрь"],["Tõai lạn","Ноябрь"],["Tạn hão","Осень"],["Tǒm","Открыть"],["Tǒm hạ","Дверь"],["Clan thịt","Часы"],["Doi hlan tat","Тетрадь"],["Xgài","Учебник"],["Noi ƀai","Имя/Название"],["Lạxáráng","Фамилия"],["Zãongh","Спать"],["Hanh","Дышать"],["Lyi","Жить"],["Cԏi","Мыть"],["Voch","Говорить"],["Cau̇","Нуждаться"],["Inh","Никогда"],["Ýngh","Всегда"],["Mama","Мама"],["Papa","Папа"],["Koi hạp","Ребёнок"],["Oi","Окно"],["Đoi ham","Кровать"],["Ỹoi","Стол"],["Rão","Стул"],["Zom hập","Телефон"],["Clai pai","Деньги"],["Hynh","Ключ"],["Qŭi","Еда"],["Ĕu̇","Хлеб"],["Zá ƀọn","Рис"],["Rụ̉on","Рыба (еда)"],["Zang hạ́p","Фрукт"],["Zang xi̇̇nh","Овощ"],["Fɐngh","Молоко"],["Ƀang","Улица"],["Cơu̇","Улица (Название)"],["Angmã̀ĕ","Магазин"],["Cҽ hịch","Больница"],["Cҽ̉ ȧi","Туалет"],["Zit","Остановка"],["Dâng","День (время суток)"],["Xoi","Ночь"],["Yu̇","Утро"],["Học","Вечер"],["Ưi","Минута"],["Thịt","Час"],["Ĩoi","Голова"],["Minh","Рука"],["Xop","Нога"],["Kĩeu̇","Глаз"],["Pla","Рот"],["Coi há pai","Сердце"],["Cҽ lan","Врач"],["Hịc loi","Лекарство"],["Ư tãou̇","Язык (Разговорный)"],["Vongh","Работа"],["Ƀẻc͜h","Вопрос"],["Au̇","Ответ"],["Xoi đach","Помощь"],["Pei","Проблема"],["Xga'ou̇","Жизнь"],["Ƹoi ƀɐngh","Любовь"],["Toi mangh","Куда"],["Xoi mangh","Откуда"],["Xoi hҽp hҽo","Почему"],["Rãȯ","Зачем"],["Xũoi","Как"],["Qŭai","Чей"],["Utrão","Сколько"],["Hҽn tem","Возможно"],["Zongh","Конечно"],["Ğai hạ́p","Наверное"],["Konh tanh","Потому-что"],["Zat leu̇","Поэтому"],["An toi","Здесь"],["Xom toi","Там"],["Goi ĩ̆am","Сейчас"],["Do ĩ̆am","Потом"],["Loi","Уже"],["Xoprátọm","Еще"],["Moi anh","Обычно"],["Clai anh","Просто"],["Ƀang anh","Иногда"],["Phai","Везде"],["I lit","Нигде"],["Ho‘tan","Кто-то"],["Alai‘tan","Что-то"],["Ai lhuon","Ничего"],["Xgang xoi","Оно"],["Moi","Мой"],["Ƹy týnh","Твой"],["Zãolai","Его"],["Fong Thĩĕt","Её"],["Ho ƀa ainịt","Их"],["Zinh","Этот"],["Tọch","То (Союз)"],["Ynh đão","Такой"],["Kánh kõa","Весь"],["Goi hạ̇ch","Каждый"],["Xgonh","Любой"],["Đanh","Сам"],["Nai","Самый"],["Ƀạn nhái","Другой"],["Qu qánh","Себя"],["Ƀạn","Не (Союз)"],["Lanh hõa","Хорошо"],["Đui","Плохо"],["Ƀạn ƀai","Нельзя"],["Xu tói","Нужно"],["Đalan","Надо"],["Zҽnh","Должен"],["Ringh","Важно"],["Xi tynh","Возможно"],["Zan hatán","Конечно"],["Xũoi gĩou̇","Правда"],["Ƀạn xũoi gĩou̇","Неправда"],["Tynh a̚o","Может быть"],["Zang Zai","Достаточно"],["Ữoi","Готово"],["Ԏm đũoc","Стоп"],["Tói","В (Союз)"],["Họtr","Под"],["Cạtr","Над"],["Đlan","За (Союз)"],["Xá xǒi","Перед"],["Ga fạng","Между"],["Zịngh thĩep","Рядом с"],["Tai","Около"],["Zԏnđão","Без"],["Qa","С (Союз)"],["Tҽi","Для"],["Kanh","До (Союз)"],["Xa","Из (Союз)"],["Cinh","К (Союз)"],["Changot","Через"],["Ƀại","По (Союз)"],["Pҽi","При"],["Đon há","Против"],["Tão","Радость"],["Zĩal","Грусть"],["Ỹҽn hí","Страх"],["Zi tynh","Злость"],["Ha fão","Усталость"],["Há tran","Голод"],["Đoi zai","Жажда"],["Foi ha týnh","Боль"],["Zĩa y̚nh","Спокойствие"],["Đo nan há","Удивление"],["Zi hánh","Счастье"],["Ăn gao","Горе"],["Cai hao","Интерес"],["Zỏu̇","Скука"],["Lao","Любовь"],["Han toi","Скука"],["An toán","Безопасность"],["Tgai","Календарь"],["Choi","Ухо"],["Dcai hõa","Работать"],["Dgҽ̉ tynh","Давать"],["Lhai pen","Ловить"],["U̇tanh","Лежать"],["Cap","Держать"],["Lhun","Болеть"],["Zĩa̚","Случайно"],["Manh","Целый"],["Zoh","Родитель"],["Mo","Фальшивый"],["Ơ đao","Где"],["Ở","Что (частица)"],["Zau̇","Подлежащее"],["Ơi đ’ qai","Сказуемое"],["Tԏm","Дополнениe"],["Đou̇","Деньга"],["Đau̇","Год"],["Xon gĩao","Урок"],["Hađang gĩao","Урок химии"],["Lao gĩao","Урок географии"],["Lan thịc gĩao","Урок биологии"],["Đon ƀao gĩao","Урок физики"],["Zou̇ gĩao","Урок математики"],["Mái","Очень"],["Tho","Но (Союз)"],["Ý","И (Союз)"],["Vao zĩen","Также"],["Não","Пока (Связка)"],["Đao đa fangh","Вернуть"],["Đoi gĩam","Владение"],["Mhinh","Устройство"],["Dãen","Обращаться"],["Há nǒi ƀai","Здравствуйте"],["Zư ƀҽnh","До свидания"],["Ti xĩĕn","Электрон"],["Za ƀai","Почта"],["Mҽnh","Пароль"],["Ka","От (Союз)"],["Ki nọi","Символ"],["Na nan","Повторить"],["Te ha nai","Входить"],["Xo te ha nai","Регистрировать"],["Pailan","Аккаунт"],["Ƀai te","Выходить"],["Ưngh xept","Сообщение"],["Ha pai","Отправлять"],["Mươi","Выбирать"],["Trạ̉roen","Контакт"],["Ƀan zái","Чтобы"],["Kҽ hịch","Начать"],["Za plan","Переписка"],["Ha lõan","Отсутствовать"],["Xệ ha nai","Писать (в сфере Интернет)"],["Xệ","Писать"],["Ԏm tynh","Приглашать"],["Anthém","Друг"],["Xervix","Сервис"],["Ho hanh","Служба"],["Ƀai xa tứng","Настройки"],["Xoi crantọn","Тема"],["Athĩen","Темно"],["Zi lan ğǎo","Светло"],["Nẽon","Неон"],["Xotaianh","Закрывать"],["Att’ract","Совпадать"],["Ҽ̆","Являться"],["Xa hạc","Создание"],["Ngu đụ̉ailan","Подтверждать"],["Xon đҽr","Пользователь"],["Xi zyngh","Уведомление"],["Đon","Про (О) (Союз)"],["Zailan","Чат"],["Zơng","Сеть"],["Zacôtưnh","Давно"],["Amơu̇","Все(х)"],["Xom pҽ̣t","Группа"],["Zĩo xoi","Бот"],["Ԏiĕu̇","Канал"],["Er zãotơngh","Публично"],["Contҽ̀nt","Контент"],["Za hoi","Разрешение"],["Raka","Реакция"],["Ŏu̇ tenhh","Снимать/Снять"],["Latĩĕn","Латиница"],["Ğa hai","Цифра"],["Na minh","Занят"],["Emou̇ƹai","Эмоция"],["Lanzĩen","Персонаж"],["Dgҽxt","Жест"],["Zo ƀanão","Существо"],["Qaí zingh","Растение"],["Zing","Природа"],["Gaiziẹt","Рождение"],["Đan cạn gaiziẹt","День рождения"],["Qõanh","Скрывать"],["Im","Время"],["Polaihan","Посещение"],["Ling","Ссылка"],["Profíl","Профиль"],["Cxang tĩem","Сохранить"],["Zanh","Девочка/Девушка/Женщина"],["Ỵ́ngh","Мальчик/Парень/Мужчина"],["Xgóiham","Пол (М/Ж)"],["Toi‘anh","Указать"],["Xai ԏ̃ĕm","Читать"],["Zãҽlan","Владелец"],["Đaihaimailan","Администратор"],["Đalatên","Сделать"],["Xaƀịt","Копировать"],["Đoxtâch","Действительно"],["Zilan","Участник"],["Xa hạc‘anh","Создать"],["Xu thynh","Изменить"],["Ca honh","Отмена"],["Lo pa xạt","Папка"],["Mu tạch","Сеанс"],["Hãŏ nga hão","Звук"],["Clan toán","Конфиденциальность"],["Loqȧling","Локализация"],["Hana xoi","Валюта (ед.ч.)"],["Lakângxạrai","Приложение"],["Rảlang","Добавить"],["Haƀai","Заверш(и)ать"],["Cɐm ưt","Остальной"],["Haƀain","Завершение"],["Zãotơngh","Лично"],["Ha pain","Отправление/Отправка"],["Vai nghỏ typhãe","Вибрация"],["Vu hão‘anh","Проверить"],["Ơ hanãҽ","Стекло"],["Hapa thynh","Щелчок"],["Ƀlai","Звонить"],["Ƀlai hanam","Перезвон"],["Ƀái xacrũan","Биография"],["Ƀangxarẽo","Музыка"],["Liitenhạp","Видно"],["Xata","Только"],["Lǎm","Вам"],["Haxan","Блокирование"],["Haxan‘anh","Заблокировать"],["Ĩĕm","Пусто"],["Ƀạn haxan‘anh","Разблокировать"],["Ƀạn haxan","Разблокирование"],["Hanađãu","Последний"],["Ahưn","Фотография"],["Xagai","Пересылка"],["Vai zai","Переход"],["Ḩỏi ƀịt","Никто"],["Rҽ hạch","Официально"],["Ԏm tynhải","Приглашение"],["Pat","Стикер"],["Haxangai","Эмодзи"],["Cong","Набор"],["Chủ","Удалить"],["Ho zãu","Нажать"],["Hy tưnh","Кнопка"],["Haƀam","Поле"],["Ganh","Ввод"],["Ganh‘anh","Вводить"],["Ư ậng","Совпадать"],["Xu não","Показывать"],["Ha nai","Текст"],["Co an noi ƀai","Переименовать"],["Ҽmporch","Импортировать"],["Xo ha lhản","Поддерживать"],["Zảnhinh","Найден"],["Yi prahan","Делиться"],["Au̇anh","Отвечать"],["Hau̇ dcan","Закрепить"],["Anhau̇ dcan","Открепить"],["Zan","У (Союз)"],["Za ƹải","Код"],["Moizan","Медиа"],["O ỹĕn","Слишком"],["To qan","Большой"],["Zung vui","Запрет"],["To xoling","Пересылка"],["Ha ym","Сохранение"],["Xaƀịt han toi","Копирование"],["Han toi zԏm","Редактировать"],["Tacl͜ȃ","Включить"],["Ƀạn taclai","Выключить"],["Xa soi","Установить"],["Zԏn tǒi","Сразу"],["Ɐ‘gỏu̇","Одеяло"],["Qŭ ğaơ","Облако"],["Tu hanh","Запрашивать"],["Hanh","Просить"],["Ƀỏ","Тысяча(и)"],["A soi","Юг"],["Ta sản vữi","Проектирование"],["Đến hap tyɐn","Описывание"],["Đa fa đě́ng","Объект"],["Rửa","Существовать"],["Đadán","Поиск"],["Shan tyanh","Сайт"],["Há dan","Горизонт"],["Ƹáxanhịp","Реализация"],["Qalan","Ориентир"],["Catưn","Население"],["Ka̚ tlan","Охват"],["Taip","Тип"],["So ngu‘anh","Строить"],["So ngu","Строительство"],["Rươi","Кошка"],["Sọ̀u̇","Собака"],["Ta sản","Проект"],["Lyi camưt","Живой"],["Sữa","Район"]];
+const MAP={'đ':'d','ƀ':'b','ҽ':'e','ɐ':'a','ԏ':'t'};
+const norm=s=>{s=s.toLowerCase().replace(/[đƀҽɐԏ]/g,c=>MAP[c]).normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+return s.replace(/['’‘ʼ`]/g,'').replace(/\s+/g,' ').trim()};
+const L={},R={},X={};const exn=s=>s.toLowerCase().normalize('NFC').replace(/['’‘ʼ`]/g,'').replace(/\s+/g,' ').trim();
+D.forEach(([l,r])=>{const xk=exn(l);X[xk]=X[xk]||{r:[]};r.split('/').map(x=>x.trim()).filter(Boolean).forEach(v=>{if(!X[xk].r.includes(v))X[xk].r.push(v)});const k=norm(l);(L[k]=L[k]||{l:l,r:[]});r.split('/').map(x=>x.trim()).filter(Boolean).forEach(v=>{if(!L[k].r.includes(v))L[k].r.push(v);
+[v,v.replace(/\s*\(.*?\)\s*/g,'').trim()].forEach(x=>{x=x.toLowerCase();if(!x)return;R[x]=R[x]||[];if(!R[x].includes(l))R[x].push(l)})})});
+const SUF=[['huen','текущее'],['hiec','будущее'],['hinh','прошедшее'],['dynh','повелит.'],['xao','мн. ч.']];
+let dir=1,res=[];
+const $=id=>document.getElementById(id);
+function parseLd(text){
+const toks=(text.match(/[^\s.,!?;:()«»"]+/g)||[]);const out=[];let i=0;
+while(i<toks.length){let found=null;
+for(let n=Math.min(4,toks.length-i);n>=1&&!found;n--){
+const src=toks.slice(i,i+n).join(' '),k=norm(src);
+const ee=X[exn(src)]||L[k];if(ee){found={src,n,opts:ee.r,tag:''};break}
+if(n<=2)for(const[s,t]of SUF){if(k.endsWith(s)&&k.length>s.length){const e=L[k.slice(0,-s.length)];if(e){found={src,n,opts:e.r,tag:t};break}}}
+if(!found&&n===1&&k==='a'){found={src,n,opts:['(родит. п.: «чего/кого»)'],tag:'',gen:1}}}
+if(!found)found={src:toks[i],n:1,opts:[],tag:''};
+out.push({src:found.src,opts:found.opts,tag:found.tag,sel:0,gen:found.gen});i+=found.n}
+return out}
+function parseRu(text){
+const toks=(text.toLowerCase().match(/[^\s.,!?;:()«»"]+/g)||[]);const out=[];let i=0;
+while(i<toks.length){let f=null;
+for(let n=Math.min(3,toks.length-i);n>=1&&!f;n--){const src=toks.slice(i,i+n).join(' ');if(R[src]){f={src,n,opts:R[src],ap:0}}}
+if(!f){const w=toks[i];for(let cut=1;cut<=3&&!f;cut++){if(w.length-cut<4)break;const st=w.slice(0,-cut);const key=Object.keys(R).find(k=>k.startsWith(st)&&k.length<=w.length+2);if(key)f={src:w,n:1,opts:R[key],ap:1}}}
+if(!f)f={src:toks[i],n:1,opts:[],ap:0};
+out.push({src:f.src,opts:f.opts,tag:f.ap?'приблизительно':'',ap:f.ap,sel:0});i+=f.n}
+return out}
+const PR={'я':0,'ты':1,'он':2,'она':2,'оно':2,'мы':3,'вы':4,'они':5};
+const IR={'быть':{p:null,x:'был',i:'будь'},'идти':{p:'иду идёшь идёт идём идёте идут',x:['шёл','шла','шло','шли'],i:'иди'},
+'есть':{p:'ем ешь ест едим едите едят',x:'ел',i:'ешь'},'пить':{p:'пью пьёшь пьёт пьём пьёте пьют',x:'пил',i:'пей'},
+'хотеть':{p:'хочу хочешь хочет хотим хотите хотят',i:'хоти'},'видеть':{p:'вижу видишь видит видим видите видят',i:'смотри'},
+'спать':{p:'сплю спишь спит спим спите спят',x:'спал',i:'спи'},'жить':{p:'живу живёшь живёт живём живёте живут',x:'жил',i:'живи'},
+'мыть':{p:'мою моешь моет моем моете моют',i:'мой'},'дышать':{p:'дышу дышишь дышит дышим дышите дышат',i:'дыши'},
+'лежать':{p:'лежу лежишь лежит лежим лежите лежат',i:'лежи'},'держать':{p:'держу держишь держит держим держите держат',i:'держи'},
+'лететь':{p:'лечу летишь летит летим летите летят',i:'лети'},'ждать':{p:'жду ждёшь ждёт ждём ждёте ждут',x:'ждал',i:'жди'},
+'давать':{p:'даю даёшь даёт даём даёте дают',i:'давай'},'занять':{p:'займу займёшь займёт займём займёте займут',i:'займи'},
+'начать':{p:'начну начнёшь начнёт начнём начнёте начнут',x:'начал',i:'начни'}};
+const IPL={'человек':'люди','ребёнок':'дети','друг':'друзья','дерево':'деревья','звезда':'звёзды','цветок':'цветы','год':'годы','день':'дни','место':'места','дом':'дома','город':'города','глаз':'глаза','имя':'имена'};
+const FEM=['ночь','область','дверь','сеть','кладь'];
+const QW=['что','где','когда','кто','куда','откуда','почему','зачем','как','чей','сколько'];
+const cl=r=>r.opts[r.sel].replace(/\s*\(.*?\)/g,'').trim().toLowerCase();
+const isQ=r=>r&&r.opts.length&&!r.gen&&QW.includes(cl(r));
+const HU=/[жчшщ]$/,VW=/[аеёиоуыэюя]$/;
+const refl=f=>f+(VW.test(f)?'сь':'ся');
+function mut(s){if(/ст$/.test(s))return s.slice(0,-2)+'щ';const m={б:'бл',в:'вл',п:'пл',ф:'фл',м:'мл',д:'ж',з:'ж',с:'ш',т:'ч'},c=s.slice(-1);return m[c]?s.slice(0,-1)+m[c]:s}
+function pres(b,i){const t=IR[b];if(t)return t.p?t.p.split(' ')[i]:'';
+const E=['ю','ешь','ет','ем','ете','ют'];
+if(/овать$|евать$/.test(b))return b.slice(0,-5)+'у'+E[i];
+if(/[ая]ть$/.test(b))return b.slice(0,-2)+E[i];
+if(/(ыть|оть)$/.test(b))return b.slice(0,-3)+'о'+E[i];
+if(/уть$/.test(b))return b.slice(0,-3)+'у'+E[i];
+if(['иметь','болеть','уметь','владеть'].includes(b))return b.slice(0,-2)+E[i];
+if(/(ить|еть)$/.test(b)){const s=b.slice(0,-3);if(i===0){const m=mut(s);return m+(HU.test(m)?'у':'ю')}
+return s+['','ишь','ит','им','ите',HU.test(s)?'ат':'ят'][i]}
+return b}
+function past(b,i,g,r){const t=IR[b],k=i>=3?3:g==='f'?1:g==='n'?2:0;let f;
+if(t&&t.x)f=Array.isArray(t.x)?t.x[k]:[t.x,t.x+'а',t.x+'о',t.x+'и'][k];
+else{const s=b.slice(0,-2)+'л';f=[s,s+'а',s+'о',s+'и'][k]}
+return r?refl(f):f}
+function imp(b,pl,r){const t=IR[b];let f=t&&t.i?t.i:pres(b,1).replace(/([аяуоюе])ешь$/,'$1й').replace(/ишь$/,'и');
+if(pl)f+='те';return r?refl(f):f}
+function plu(w){if(/\s/.test(w))return w;if(IPL[w])return IPL[w];
+if(/(ый|ой)$/.test(w))return w.slice(0,-2)+'ые';if(/ий$/.test(w))return w.slice(0,-2)+'ие';if(/ое$/.test(w))return w.slice(0,-2)+'ые';
+if(/(ие|ье)$/.test(w))return w.slice(0,-1)+'я';
+const c=w.slice(-1),s=w.slice(0,-1);
+if(c==='а')return s+(/[гкхжчшщ]$/.test(s)?'и':'ы');
+if(c==='я'||c==='ь'||c==='й')return s+'и';if(c==='о')return s+'а';if(c==='е')return s+'я';
+return w+(HU.test(w)||/[гкх]$/.test(w)?'и':'ы')}
+function gen(w){if(/\s/.test(w))return w;if(w==='день')return 'дня';
+if(/(ый|ой|ое)$/.test(w))return w.slice(0,-2)+'ого';if(/ий$/.test(w))return w.slice(0,-2)+'его';
+if(/(ие|ье)$/.test(w))return w.slice(0,-1)+'я';if(/ок$/.test(w))return w.slice(0,-2)+'ка';
+const c=w.slice(-1),s=w.slice(0,-1);
+if(c==='а')return s+(/[гкхжчшщ]$/.test(s)?'и':'ы');if(c==='я')return s+'и';
+if(c==='ь')return FEM.includes(w)?s+'и':s+'я';if(c==='й')return s+'я';if(c==='о')return s+'а';if(c==='е')return s+'я';
+return w+'а'}
+const isV=w=>!/\s/.test(w)&&w!=='сеть'&&(IR[w]||/(ать|ять|еть|ить|ыть|оть|уть|ти|ться|чь)$/.test(w));
+function compose(){
+const rf=res.map((r,k)=>!!(res[k+1]&&res[k+1].opts.length&&!res[k+1].gen&&cl(res[k+1])==='себя'));
+let sp=2,sg='m',got=false,seenV=false,nG=false,pV=false,out=[],q=null;
+res.forEach((r,k)=>{
+if(!r.opts.length){out.push('['+r.src+'?]');return}
+if(r.gen){nG=true;return}
+const w=cl(r);
+if(w==='себя'&&k>0&&rf[k-1])return;
+if(k===res.length-1&&isQ(r)&&res.length>1){q=w;return}
+if(w==='не'){out.push(w);return}
+if(PR[w]!==undefined){sp=PR[w];sg=w==='она'?'f':w==='оно'?'n':'m';got=true;out.push(w);pV=false;return}
+if(w==='должен'){out.push(sp>=3?'должны':sg==='f'?'должна':sg==='n'?'должно':'должен');pV=true;return}
+if(['нужно','надо','можно','нельзя'].includes(w)){out.push(w);pV=true;return}
+if(isV(w)){seenV=true;const t=r.tag;let inf=w;const isR=/ся$/.test(inf)||rf[k];
+if(rf[k]&&!/ся$/.test(inf))inf+='ся';
+const b=isR?inf.slice(0,-2):inf;let f;
+if(pV&&!t)f=inf;
+else if(t==='будущее')f=['буду','будешь','будет','будем','будете','будут'][sp]+' '+inf;
+else if(t==='прошедшее')f=past(b,sp,sg,isR);
+else if(t==='повелит.'&&(sp===1||sp===4))f=imp(b,sp===4,isR);
+else{f=b==='быть'?'':pres(b,sp);if(isR&&f)f=refl(f);if(t==='текущее'&&f)f='сейчас '+f}
+out.push(f);pV=true;return}
+pV=false;let x=w;
+if(r.tag==='мн. ч.')x=plu(x);
+if(nG){x=gen(x);nG=false}
+if(!got&&!seenV){sp=r.tag==='мн. ч.'?5:2;sg=/[ая]$/.test(w)||FEM.includes(w)?'f':/[ое]$/.test(w)?'n':'m';got=true}
+out.push(x)});
+let a=out.filter(Boolean);if(q)a.unshift(q);
+let s=a.join(' ').replace('вьетнам','Вьетнам');
+s=s.charAt(0).toUpperCase()+s.slice(1);return q?s+'?':s}
+function render(){
+const o=$('out'),c=$('cards');
+if(!res.length){o.innerHTML='<small>Перевод появится здесь</small>';c.innerHTML='';return}
+const ws=res.map(r=>{if(!r.opts.length)return '['+r.src+'?]';let w=r.opts[r.sel];if(dir===1&&r.tag)w+=' ('+r.tag+')';return w});
+let sent;if(dir===1)sent=compose();else{const a=ws.slice();if(isQ(res[0])&&res.length>1)a.push(a.shift());sent=a.join(' ')}
+o.textContent='';const m=document.createElement('div');m.textContent=sent;o.appendChild(m);
+if(dir===1){const s=document.createElement('small');s.textContent='по словам: '+ws.join(' ');o.appendChild(s)}
+c.innerHTML='';
+res.forEach((r,i)=>{const d=document.createElement('div');d.className='c'+((!r.opts.length||r.ap)?' u':'');
+const s=document.createElement('div');s.className='s';s.textContent=r.src;d.appendChild(s);
+const t=document.createElement('div');t.className='t';
+t.textContent=r.opts.length?(r.tag?'форма: '+r.tag:''):'нет в словаре';if(t.textContent)d.appendChild(t);
+if(r.opts.length>1){const ch=document.createElement('div');ch.className='chips';
+r.opts.forEach((v,j)=>{const b=document.createElement('button');b.className='chip'+(j===r.sel?' on':'');b.textContent=v;b.onclick=()=>{r.sel=j;render()};ch.appendChild(b)});d.appendChild(ch)}
+else if(r.opts.length){const m=document.createElement('div');m.textContent='→ '+r.opts[0];d.appendChild(m)}
+c.appendChild(d)})}
+function run(){const v=$('in').value;res=v.trim()?(dir===1?parseLd(v):parseRu(v)):[];render()}
+function setDir(d){dir=d;$('b1').className=d===1?'on':'';$('b2').className=d===2?'on':'';
+$('in').placeholder=d===1?'Например: Etgái liitèn‘hưen xalan clánton':'Например: я хочу пить чай';run()}
+$('b1').onclick=()=>setDir(1);$('b2').onclick=()=>setDir(2);$('in').oninput=run;
+</script>
+</body>
+</html>
